@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
+import os,re
 # import shutil
 try:
     import configparser
@@ -53,7 +53,7 @@ print ('进入桌面： ' + os.getcwd())
 
 print('\n')
 print('=============================================')
-print('create dirs')
+print('1. create dirs')
 print('=============================================')
 
 if not os.path.exists(file_dir):
@@ -87,19 +87,33 @@ print('进入SourceCode下： ' + os.getcwd())
 
 print('\n')
 print('=============================================')
-gitCommandLine = 'git clone ' + git_clone_address + ' ' + code_dir + ' -b ' + git_branch_name
-print('git clone or git pull: ')
-print(gitCommandLine)
+print('2. git command')
 print('=============================================')
+
+def execCmd(cmd):
+    r = os.popen(cmd)
+    text = r.read()
+    r.close()
+    return text.lstrip('* ').strip()
+
+gitCommandLine = ''
 
 if not os.listdir(code_dir):
     #空文件夹
     os.system('git clone ' + git_clone_address + ' ' + code_dir + ' -b ' + git_branch_name)
+    gitCommandLine = 'git clone ' + git_clone_address + ' ' + code_dir + ' -b ' + git_branch_name
 else:
     #已经clone过
-    os.system('git pull')
+    currentBranch = execCmd('git branch')
 
+    if(git_branch_name in currentBranch):
+        gitCommandLine = 'git pull'
+    else:
+        gitCommandLine = 'git checkout --track origin/' + git_branch_name
 
+print('currentBranch: ' + currentBranch + ' --> ' + 'git_branch_name: '+ git_branch_name)
+print(gitCommandLine)
+os.system(gitCommandLine)
 
 
 ##########################################################################################
@@ -124,13 +138,13 @@ createLocalPropertiesFile(code_dir,'local.properties',Root_SDK_Dir)
 # 打包
 print('\n')
 print('=============================================')
-print('gradle clean')
+print('3. gradle clean')
 print('=============================================')
 os.system('gradle clean');
 
 print('\n')
 print('=============================================')
-print('gradle assemble, generate apk')
+print('4. gradle assemble, generate apk')
 print('=============================================')
 
 if(assembleRelease):
