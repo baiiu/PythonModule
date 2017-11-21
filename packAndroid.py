@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os,re
+
 # import shutil
 try:
     import configparser
@@ -12,6 +13,7 @@ try:
     import xml.etree.cElementTree as ET
 except ImportError:
     import xml.etree.ElementTree as ET
+
 
 
 # 保持auto.py 和 auto.config在同一级目录下
@@ -97,10 +99,10 @@ def execCmd(cmd):
     return text.lstrip('* ').strip()
 
 gitCommandLine = ''
+currentBranch = ''
 
 if not os.listdir(code_dir):
     #空文件夹
-    os.system('git clone ' + git_clone_address + ' ' + code_dir + ' -b ' + git_branch_name)
     gitCommandLine = 'git clone ' + git_clone_address + ' ' + code_dir + ' -b ' + git_branch_name
 else:
     #已经clone过
@@ -113,6 +115,7 @@ else:
 
 print('currentBranch: ' + currentBranch + ' --> ' + 'git_branch_name: '+ git_branch_name)
 print(gitCommandLine)
+print('\n')
 os.system(gitCommandLine)
 
 
@@ -140,7 +143,7 @@ print('\n')
 print('=============================================')
 print('3. gradle clean')
 print('=============================================')
-os.system('gradle clean');
+os.system('./gradlew clean');
 
 print('\n')
 print('=============================================')
@@ -149,10 +152,10 @@ print('=============================================')
 
 if(assembleRelease):
     print('assembleRelease apk')
-    os.system('gradle assembleRelease')
+    os.system('./gradlew assembleRelease')
 else:
     print('assembleDebug apk')
-    os.system('gradle assembleDebug')
+    os.system('./gradlew assembleDebug')
 
 ##########################################################################################
 #5.移动.apk文件到Apk目录，方便查找
@@ -172,3 +175,9 @@ source_apk_dir = code_dir + '/' + 'app/build/outputs/apk'
 
 if os.path.exists(source_apk_dir):
     moveFiles(source_apk_dir,apk_dir)
+
+
+
+##########################################################################################
+#5. uploadApk
+os.system('python /Users/baiiu/Desktop/uploadApk.py')
