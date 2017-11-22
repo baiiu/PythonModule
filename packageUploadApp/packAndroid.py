@@ -166,12 +166,11 @@ def moveFiles(sourceDir,  targetDir):#复制一级目录下的所有文件到指
     for file in os.listdir(sourceDir):
          sourceFile = os.path.join(sourceDir,  file)
          targetFile = os.path.join(targetDir,  file)
-         if os.path.isfile(sourceFile) and ('unaligned' not in os.path.basename(sourceFile)):
+         apkFilePath = os.path.basename(sourceFile)
+         if os.path.isfile(sourceFile) and ('unaligned' not in apkFilePath) and (apkFilePath.endswith('.apk')):
              open(targetFile,"wb").write(open(sourceFile,"rb").read())
 
 source_apk_dir = code_dir + '/' + 'app/build/outputs/apk'
-# if os.path.exists(source_apk_dir):
-#     removeFileInFirstDir(source_apk_dir)
 
 if os.path.exists(source_apk_dir):
     moveFiles(source_apk_dir,apk_dir)
@@ -180,4 +179,5 @@ if os.path.exists(source_apk_dir):
 
 ##########################################################################################
 #5. uploadApk
-os.system('python /Users/baiiu/Desktop/uploadApk.py')
+uploadApkPyPath = os.path.dirname(__file__) + '/uploadApk.py'
+os.system('python ' + uploadApkPyPath)
