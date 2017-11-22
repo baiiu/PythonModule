@@ -18,8 +18,11 @@ binary = data['cert']['binary']
 print(icon['key'])
 print(binary['key'])
 
-# 解析APK包，获取icon和versionName、versionCode
 
+# 现在的问题主要是如何获取 versionName 和 versionCode,icon
+# 1. 直接调用java解析apk包,python得需要配置很多东西去依赖能解压apk包的东西
+# 2. python调用aapt反编译
+# 3. 依赖androguard
 
 
 def uploadIcon(requestUrl,key,token,file):
