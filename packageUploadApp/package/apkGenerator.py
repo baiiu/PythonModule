@@ -154,7 +154,7 @@ def moveFiles(sourceDir,  targetDir):#复制一级目录下的所有文件到指
     for file in os.listdir(sourceDir):
          sourceFile = os.path.join(sourceDir,  file)
          targetFile = os.path.join(targetDir,  file)
-         print(sourceFile+', ' + targetFile)
+         # print(sourceFile+ ', ' + targetFile)
 
          apkFilePath = os.path.basename(sourceFile)
          if os.path.isfile(sourceFile) and ('unaligned' not in apkFilePath) and (apkFilePath.endswith('.apk')):

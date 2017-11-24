@@ -17,7 +17,9 @@ except ImportError:
 
 # 保持auto.py 和 auto.config在同一级目录下
 
-Auto_Config_Path = os.path.dirname(__file__) + '/package.config'
+curDir = os.path.dirname(__file__)
+Auto_Config_Path = os.path.dirname(curDir) + '/package.config'
+# print('--> ' + Auto_Config_Path + ' <---')
 
 
 try:
