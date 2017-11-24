@@ -72,17 +72,17 @@ def execCmd(cmd):
     return text.strip('* ').strip('\n').strip()
 
 gitCommandLine = ''
-currentBranch = ''
 
 if not os.listdir(code_dir):
     #空文件夹
-    gitCommandLine = 'git clone ' + git_clone_address + ' ' + code_dir + ' -b ' + git_branch_name
-else:
-    #已经clone过
-    currentBranch = execCmd('git rev-parse --abbrev-ref HEAD')
+    gitCommandLine = 'git clone ' + git_clone_address + ' ' + code_dir + ' -b master'
+    print(gitCommandLine)
+    os.system(gitCommandLine)
 
-    if(git_branch_name not in currentBranch):
-        gitCommandLine = 'git checkout ' + git_branch_name
+#已经clone过
+currentBranch = execCmd('git rev-parse --abbrev-ref HEAD')
+if(git_branch_name not in currentBranch):
+    gitCommandLine = 'git checkout ' + git_branch_name
 
 print('currentBranch: ' + currentBranch)
 print('git_branch_name: '+ git_branch_name)
@@ -90,13 +90,14 @@ print('\n')
 
 if(len(gitCommandLine) != 0):
     print(gitCommandLine)
-
     commandLineResult = execCmd(gitCommandLine)
+    print('---> '+ commandLineResult +' <--')
     if(len(commandLineResult)==0):
         raise Exception('the branch is not exist, please check out your config')
 
 
 # 如果切换本地分支的话拉下代码
+print('\n')
 print('git pull')
 os.system('git pull')
 
@@ -126,7 +127,7 @@ print('\n')
 print('=============================================')
 print('3. gradle clean')
 print('=============================================')
-os.system('./gradlew clean');
+os.system('./gradlew clean')
 
 print('\n')
 print('=============================================')
