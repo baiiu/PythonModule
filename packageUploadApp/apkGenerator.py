@@ -2,45 +2,18 @@
 # -*- coding: utf-8 -*-
 
 import os,re
+import configReader
 
-# import shutil
-try:
-    import configparser
-except ImportError:
-    import ConfigParser
-
-try:
-    import xml.etree.cElementTree as ET
-except ImportError:
-    import xml.etree.ElementTree as ET
-
-
-
-# 保持auto.py 和 auto.config在同一级目录下
-Auto_Config_Path = os.path.dirname(__file__) + '/auto.config'
-
-try:
-    cf = configparser.ConfigParser();
-    print('python 3')
-except Exception as e:
-    cf = ConfigParser.ConfigParser();
-    print('python 2')
-
-
-#替换为绝对路径
-cf.read(Auto_Config_Path)
-
-
-Root_SDK_Dir = cf.get('app','Root_SDK_Dir')
-git_clone_address = cf.get('app','git_clone_address')
-git_branch_name = cf.get('app','git_branch_name')
-assembleRelease = cf.getboolean('app','assembleRelease')
+Root_SDK_Dir = configReader.Root_SDK_Dir
+git_clone_address = configReader.git_clone_address
+git_branch_name = configReader.git_branch_name
+assembleRelease = configReader.assembleRelease
 
 # 1.设置目录
-base_file_dir = cf.get('dir','base_file_dir')
-create_dir_name = cf.get('dir','create_dir_name')
-create_code_dir_name = cf.get('dir','create_code_dir_name') #源码路径
-create_apk_dir_name = cf.get('dir','create_apk_dir_name') # apk路径
+base_file_dir = configReader.base_file_dir
+create_dir_name = configReader.create_dir_name
+create_code_dir_name = configReader.create_code_dir_name #源码路径
+create_apk_dir_name = configReader.create_apk_dir_name # apk路径
 
 file_dir = base_file_dir + '/' + create_dir_name    #/Users/baiiu/Desktop/AndroidApp
 code_dir = file_dir + '/' + create_code_dir_name      #/Users/baiiu/Desktop/AndroidApp/SourceCode
@@ -50,7 +23,7 @@ apk_dir = file_dir + '/' + create_apk_dir_name      #/Users/baiiu/Desktop/Androi
 ##########################################################################################
 #2. 在桌面上创建目录
 print ('现在所在位置： ' + os.getcwd())
-os.chdir(base_file_dir);
+os.chdir(base_file_dir)
 print ('进入桌面： ' + os.getcwd())
 
 print('\n')
@@ -96,7 +69,7 @@ def execCmd(cmd):
     r = os.popen(cmd)
     text = r.read()
     r.close()
-    return text.lstrip('* ').strip()
+    return text.strip('* ').strip('\n').strip()
 
 gitCommandLine = ''
 currentBranch = ''
@@ -106,17 +79,27 @@ if not os.listdir(code_dir):
     gitCommandLine = 'git clone ' + git_clone_address + ' ' + code_dir + ' -b ' + git_branch_name
 else:
     #已经clone过
-    currentBranch = execCmd('git branch')
+    currentBranch = execCmd('git rev-parse --abbrev-ref HEAD')
 
-    if(git_branch_name in currentBranch):
-        gitCommandLine = 'git pull'
-    else:
-        gitCommandLine = 'git checkout --track origin/' + git_branch_name
+    if(git_branch_name not in currentBranch):
+        gitCommandLine = 'git checkout ' + git_branch_name
 
-print('currentBranch: ' + currentBranch + ' --> ' + 'git_branch_name: '+ git_branch_name)
-print(gitCommandLine)
+print('currentBranch: ' + currentBranch)
+print('git_branch_name: '+ git_branch_name)
 print('\n')
-os.system(gitCommandLine)
+
+if(len(gitCommandLine) != 0):
+    print(gitCommandLine)
+
+    commandLineResult = execCmd(gitCommandLine)
+    if(len(commandLineResult)==0):
+        raise Exception('the branch is not exist, please check out your config')
+
+
+# 如果切换本地分支的话拉下代码
+print('git pull')
+os.system('git pull')
+
 
 
 ##########################################################################################
@@ -158,6 +141,10 @@ else:
     os.system('./gradlew assembleDebug')
 
 ##########################################################################################
+print('\n')
+print('=============================================')
+print('5. move apk to apkDir')
+print('=============================================')
 #5.移动.apk文件到Apk目录，方便查找
 def moveFiles(sourceDir,  targetDir):#复制一级目录下的所有文件到指定目录
     if not os.path.exists(sourceDir):
@@ -166,6 +153,8 @@ def moveFiles(sourceDir,  targetDir):#复制一级目录下的所有文件到指
     for file in os.listdir(sourceDir):
          sourceFile = os.path.join(sourceDir,  file)
          targetFile = os.path.join(targetDir,  file)
+         print(sourceFile+', ' + targetFile)
+
          apkFilePath = os.path.basename(sourceFile)
          if os.path.isfile(sourceFile) and ('unaligned' not in apkFilePath) and (apkFilePath.endswith('.apk')):
              open(targetFile,"wb").write(open(sourceFile,"rb").read())
@@ -176,8 +165,4 @@ if os.path.exists(source_apk_dir):
     moveFiles(source_apk_dir,apk_dir)
 
 
-
-##########################################################################################
-#5. uploadApk
-uploadApkPyPath = os.path.dirname(__file__) + '/uploadApk.py'
-os.system('python ' + uploadApkPyPath)
+#
