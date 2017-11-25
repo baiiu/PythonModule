@@ -1,3 +1,6 @@
 .idea
 .DS_Store
 bin
+*.pyc
+__pycache__
+.vscode
