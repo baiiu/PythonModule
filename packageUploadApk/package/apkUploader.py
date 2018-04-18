@@ -45,10 +45,15 @@ print('=============================================')
 print('7. 开始上传 icon 和 apk文件')
 print('=============================================')
 
+assembleRelease = configReader.assembleRelease
+if(assembleRelease):
+    api_token = configReader.api_token_release
+else:
+    api_token = configReader.api_token_debug
 
-formData = {'type':'android','bundle_id':packageName,'api_token':configReader.api_token}
+formData = {'type':'android','bundle_id':packageName,'api_token':api_token}
 response = requests.post('http://api.fir.im/apps', data = formData)
-print(response.text)
+# print(response.text)
 data = response.json()
 icon = data['cert']['icon']
 binary = data['cert']['binary']

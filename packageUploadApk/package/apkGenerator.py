@@ -12,13 +12,13 @@ assembleRelease = configReader.assembleRelease
 # 1.设置目录
 base_file_dir = configReader.base_file_dir
 create_dir_name = configReader.create_dir_name
-create_code_dir_name = configReader.create_code_dir_name #源码路径
-create_apk_dir_name = configReader.create_apk_dir_name # apk路径
+create_code_dir_name = configReader.create_code_dir_name # SourceCode
+create_apk_dir_name = configReader.create_apk_dir_name # apk
 
 file_dir = configReader.file_dir    #/Users/baiiu/Desktop/AndroidApp
 code_dir = configReader.code_dir      #/Users/baiiu/Desktop/AndroidApp/SourceCode
 apk_dir = configReader.apk_dir      #/Users/baiiu/Desktop/AndroidApp/Apk
-
+release_channel_dir = configReader.release_channel_dir
 
 ##########################################################################################
 #2. 在桌面上创建目录
@@ -49,6 +49,10 @@ def removeFileInFirstDir(targetDir):#删除一级目录下的所有文件
 
 if(os.path.exists(apk_dir)):
     removeFileInFirstDir(apk_dir)
+if(os.path.exists(release_channel_dir)):
+    removeFileInFirstDir(release_channel_dir)
+    os.rmdir(release_channel_dir)
+
 
 if not os.path.exists(apk_dir):
     os.mkdir(create_apk_dir_name)
@@ -69,7 +73,8 @@ def execCmd(cmd):
     r = os.popen(cmd)
     text = r.read()
     r.close()
-    return text.strip('* ').strip('\n').strip()
+    # return text.strip('* ').strip('\n').strip()
+    return text
 
 gitCommandLine = ''
 
@@ -79,19 +84,29 @@ if not os.listdir(code_dir):
     print(gitCommandLine)
     os.system(gitCommandLine)
 
-#已经clone过
+#已经clone过,先拉取远端更新
+print('\n')
+print('git fetch')
+os.system('git fetch')
+
+
 currentBranch = execCmd('git rev-parse --abbrev-ref HEAD')
-if(git_branch_name not in currentBranch):
+branches = execCmd('git branch')
+if(git_branch_name not in branches):
+    gitCommandLine = 'git checkout --track origin/' + git_branch_name
+else:
     gitCommandLine = 'git checkout ' + git_branch_name
 
-print('currentBranch: ' + currentBranch)
-print('git_branch_name: '+ git_branch_name)
 print('\n')
+print('currentBranch: ' + currentBranch.strip('\n'))
+print('git_branch_name: '+ git_branch_name)
+print('branches: \n'+ branches)
 
+print('\n')
 if(len(gitCommandLine) != 0):
     print(gitCommandLine)
     commandLineResult = execCmd(gitCommandLine)
-    print('---> '+ commandLineResult +' <--')
+    print('---> '+ commandLineResult.strip('\n') +' <--')
     if(len(commandLineResult)==0):
         raise Exception('the branch is not exist, please check out your config')
 
@@ -160,7 +175,11 @@ def moveFiles(sourceDir,  targetDir):#复制一级目录下的所有文件到指
          if os.path.isfile(sourceFile) and ('unaligned' not in apkFilePath) and (apkFilePath.endswith('.apk')):
              open(targetFile,"wb").write(open(sourceFile,"rb").read())
 
+
 source_apk_dir = code_dir + '/' + 'app/build/outputs/apk'
+source_apk_dir += "/release" if assembleRelease else "/debug";
+print(source_apk_dir)
+
 
 if os.path.exists(source_apk_dir):
     moveFiles(source_apk_dir,apk_dir)

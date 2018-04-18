@@ -10,7 +10,8 @@ def getAppBaseInfo(apkpath):
     output = os.popen("./aapt d badging %s" % apkpath).read()
 
     # package: name='com.baiiu.routerdesignlearn' versionCode='1' versionName='1.0' platformBuildVersionName='7.1.1'
-    matchVersion = re.compile("package: name='(\S+)' versionCode='(\d+)' versionName='(\S+)' platformBuildVersionName='(\S+)'").match(output)
+    # package: name='com.baiiu.zhihudaily' versionCode='17122620' versionName='1.4' platformBuildVersionName=''
+    matchVersion = re.compile("package: name='(\S+)' versionCode='(\d+)' versionName='(\S+)'").match(output)
     if not matchVersion:
         raise Exception("can't get packageinfo")
 
@@ -34,22 +35,38 @@ def getAppBaseInfo(apkpath):
 
 
 def getCurrentDirApk():
-    for dir in os.walk(os.path.dirname(__file__)):
-        for filename in dir[2]:
-            if os.path.splitext(filename)[1] == '.apk':
+    import configReader
+    apk_dir = configReader.apk_dir
+    def getFileName(sourceDir):
+        if not os.path.exists(sourceDir):
+            return;
+
+        if not os.listdir(sourceDir):
+            return
+
+        for filename in os.listdir(sourceDir):
+            if '.apk' in filename:
                 return filename
 
-# if __name__ == "__main__":
-#     #获得当前目录下的apk名，用于测试
-#     apkName = getCurrentDirApk()
-#
-#     if not apkName:
-#         print('can not find apk!!!')
-#         exit()
-#
-#     os.chdir(os.path.dirname(__file__))
-#     packagename,versionCode,versionName,appLable,iconName = getAppBaseInfo(apkName)
-#     print('versionCode: ' + versionCode)
-#     print('versionName: ' + versionName)
-#     print('appLable: ' + appLable)
-#     print('iconName: ' + iconName)
+    apkName = getFileName(apk_dir)
+    if(apkName is None or len(apkName) == 0):
+        raise Exception("there is no apk to upload")
+
+    apkPath = apk_dir + '/' + apkName
+    print('apkPath: '+ apkPath)
+    return apkPath;
+
+if __name__ == "__main__":
+    #获得当前目录下的apk名，用于测试
+    apkName = getCurrentDirApk()
+
+    if not apkName:
+        print('can not find apk!!!')
+        exit()
+
+    os.chdir(os.path.dirname(__file__))
+    packagename,versionCode,versionName,appLable,iconName = getAppBaseInfo(apkName)
+    print('versionCode: ' + versionCode)
+    print('versionName: ' + versionName)
+    print('appLable: ' + appLable)
+    print('iconName: ' + iconName)
