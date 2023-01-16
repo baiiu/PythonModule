@@ -6,12 +6,10 @@ import subprocess
 import sys
 import time
 
-CHECK_DURATION = 10 * 1 * 60
 
 count = 0
 allocCount = 0
 logcat = 0
-startTime = 0
 
 def isGC(line, pid):
     try:
@@ -28,9 +26,10 @@ def isAlloc(line):
     except Exception as e:
         return False
 
-def checkLogcat(pid):
+async def checkLogcat(pid):
     global count
     global allocCount
+    global logcat
 
     while not logcat.poll():
         log = logcat.stdout.readline()
@@ -41,9 +40,6 @@ def checkLogcat(pid):
                 allocCount += 1
             print("all: " + str(count) + " , alloc:" + str(allocCount) + " , " + str(log, encoding="utf-8").strip())
 
-        if (time.time() - startTime > CHECK_DURATION):
-            break;
-
 if __name__ == '__main__':
     os.system("""
         adb shell am start "snssdk1840://home/play_video?group_id=7189121860964043557\&content_type=5"
@@ -52,11 +48,11 @@ if __name__ == '__main__':
 
     cmd = "adb logcat -v time"
     logcat = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE) # 使用管道
-    startTime = time.time()
     if(len(sys.argv) == 1):
         checkLogcat("")
     else:
         checkLogcat(sys.argv[1])
 
-    print("111111")
-    logcat.kill()
+    # print("111111")
+    # time.sleep(3)
+    # os.killpg(os.getpgid(logcat.pid), signal.SIGTERM)
